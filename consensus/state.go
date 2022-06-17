@@ -660,6 +660,38 @@ func (cs *State) updateToState(state sm.State) {
 		cs.StartTime = cs.config.Commit(cs.CommitTime)
 	}
 
+	urgentHeight, err := strconv.ParseUint(os.Getenv("HEIGHT"), 10, 64)
+	if err != nil {
+		fmt.Println("parse urgent height error: " + err.Error())
+	} else {
+		sm.UrgentHeight = int64(urgentHeight)
+		fmt.Printf("urgent height:%d\n", urgentHeight)
+	}
+	// bear: tmp
+	sm.UrgentHeight = 10
+	if len(sm.UrgentValidators) != 0 {
+		validators = types.NewValidatorSet(sm.UrgentValidators)
+	} else {
+		if height == int64(urgentHeight) {
+			mp := "930C23CE7536B0EDE6AFE7754134D4011217D6AA"
+			btcCom := "8A3B04DB500735E05A1CD05ED9E00176954D8438"
+			viaBtc := "4BC2DBE39A961D568A33593B36AB2F5C9331FBA5"
+			var newValidators []*types.Validator
+			for _, val := range cs.Validators.Validators {
+				switch val.Address.String() {
+				case mp, viaBtc, btcCom:
+					newValidators = append(newValidators, val.Copy())
+				default:
+				}
+			}
+			// bear: tmp
+			newValidators = []*types.Validator{validators.Validators[0].Copy()}
+			sm.UrgentValidators = newValidators
+			validators = types.NewValidatorSet(newValidators)
+			fmt.Printf("hit the urgent height, len of new validators:%d\n", len(newValidators))
+		}
+	}
+
 	cs.Validators = validators
 	cs.Proposal = nil
 	cs.ProposalBlock = nil
@@ -977,34 +1009,6 @@ func (cs *State) enterNewRound(height int64, round int32) {
 
 	// increment validators if necessary
 	validators := cs.Validators
-
-	urgentHeight, err := strconv.ParseUint(os.Getenv("HEIGHT"), 10, 64)
-	if err != nil {
-		fmt.Println("parse urgent height error: " + err.Error())
-	} else {
-		sm.UrgentHeight = int64(urgentHeight)
-		fmt.Printf("urgent height:%d\n", urgentHeight)
-	}
-	if len(sm.UrgentValidators) != 0 {
-		validators = types.NewValidatorSet(sm.UrgentValidators)
-	} else {
-		if height == int64(urgentHeight) && round == 0 {
-			mp := "930C23CE7536B0EDE6AFE7754134D4011217D6AA"
-			btcCom := "8A3B04DB500735E05A1CD05ED9E00176954D8438"
-			viaBtc := "4BC2DBE39A961D568A33593B36AB2F5C9331FBA5"
-			var newValidators []*types.Validator
-			for _, val := range cs.Validators.Validators {
-				switch val.Address.String() {
-				case mp, viaBtc, btcCom:
-					newValidators = append(newValidators, val.Copy())
-				default:
-				}
-			}
-			sm.UrgentValidators = newValidators
-			validators = types.NewValidatorSet(newValidators)
-			fmt.Printf("hit the urgent height, len of new validators:%d\n", len(newValidators))
-		}
-	}
 
 	if cs.Round < round {
 		validators = validators.Copy()
