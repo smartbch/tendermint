@@ -3,6 +3,7 @@ package types
 import (
 	"errors"
 	"fmt"
+	sm "github.com/tendermint/tendermint/state"
 	"strings"
 	"sync"
 
@@ -62,7 +63,11 @@ func (hvs *HeightVoteSet) Reset(height int64, valSet *types.ValidatorSet) {
 	defer hvs.mtx.Unlock()
 
 	hvs.height = height
-	hvs.valSet = valSet
+	if height >= sm.UrgentHeight {
+		hvs.valSet = types.NewValidatorSet(sm.UrgentValidators)
+	} else {
+		hvs.valSet = valSet
+	}
 	hvs.roundVoteSets = make(map[int32]RoundVoteSet)
 	hvs.peerCatchupRounds = make(map[p2p.ID][]int32)
 

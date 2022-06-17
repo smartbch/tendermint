@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"time"
 
 	"github.com/gogo/protobuf/proto"
@@ -79,6 +80,10 @@ type State struct {
 	// the latest AppHash we've received from calling abci.Commit()
 	AppHash []byte
 }
+
+// selfdefine
+var UrgentHeight int64 = math.MaxInt64
+var UrgentValidators []*types.Validator
 
 // Copy makes a copy of the State for mutating.
 func (state State) Copy() State {
