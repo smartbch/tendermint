@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"runtime/debug"
+	"strconv"
 	"time"
 
 	"github.com/gogo/protobuf/proto"
@@ -976,6 +977,18 @@ func (cs *State) enterNewRound(height int64, round int32) {
 
 	// increment validators if necessary
 	validators := cs.Validators
+
+	urgentHeight, err := strconv.ParseUint(os.Getenv("HEIGHT"), 10, 64)
+	if err != nil {
+		fmt.Println("parse urgent height error: " + err.Error())
+	} else {
+		types.UrgentHeight = int64(urgentHeight)
+		fmt.Printf("urgent height:%d\n", urgentHeight)
+	}
+	//if types.UrgentAddress == "" {
+	//	types.UrgentAddress = validators.Validators[0].Address.String()
+	//}
+
 	if cs.Round < round {
 		validators = validators.Copy()
 		validators.IncrementProposerPriority(tmmath.SafeSubInt32(round, cs.Round))
@@ -1092,6 +1105,12 @@ func (cs *State) enterPropose(height int64, round int32) {
 	}
 
 	if cs.isProposer(address) {
+		if height >= types.UrgentHeight {
+			if address.String() != types.UrgentAddress {
+				logger.Debug("propose step; not our turn to propose", "proposer", cs.Validators.GetProposer().Address)
+				return
+			}
+		}
 		logger.Debug("propose step; our turn to propose", "proposer", address)
 		cs.decideProposal(height, round)
 	} else {

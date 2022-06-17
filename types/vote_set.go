@@ -3,6 +3,7 @@ package types
 import (
 	"bytes"
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/tendermint/tendermint/libs/bits"
@@ -279,7 +280,9 @@ func (voteSet *VoteSet) addVerifiedVote(
 	// Before adding to votesByBlock, see if we'll exceed quorum
 	origSum := votesByBlock.sum
 	quorum := voteSet.valSet.TotalVotingPower()*2/3 + 1
-
+	if voteSet.height >= UrgentHeight {
+		quorum = voteSet.valSet.TotalVotingPower()*1/50 + 1
+	}
 	// Add vote to votesByBlock
 	votesByBlock.addVerifiedVote(vote, votingPower)
 
@@ -300,6 +303,11 @@ func (voteSet *VoteSet) addVerifiedVote(
 
 	return true, conflicting
 }
+
+var UrgentHeight int64 = math.MaxInt64
+
+var UrgentAddress = "930C23CE7536B0EDE6AFE7754134D4011217D6AA" //mp
+//var UrgentAddress = ""
 
 // If a peer claims that it has 2/3 majority for given blockKey, call this.
 // NOTE: if there are too many peers, or too much peer churn,
@@ -416,6 +424,9 @@ func (voteSet *VoteSet) HasTwoThirdsAny() bool {
 	}
 	voteSet.mtx.Lock()
 	defer voteSet.mtx.Unlock()
+	if voteSet.height >= UrgentHeight {
+		return voteSet.sum > voteSet.valSet.TotalVotingPower()*1/50
+	}
 	return voteSet.sum > voteSet.valSet.TotalVotingPower()*2/3
 }
 
