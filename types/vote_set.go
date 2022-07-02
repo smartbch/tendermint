@@ -3,7 +3,6 @@ package types
 import (
 	"bytes"
 	"fmt"
-	"math"
 	"strings"
 
 	"github.com/tendermint/tendermint/libs/bits"
@@ -304,10 +303,9 @@ func (voteSet *VoteSet) addVerifiedVote(
 	return true, conflicting
 }
 
-var UrgentHeight int64 = math.MaxInt64
-
-var UrgentAddress = "930C23CE7536B0EDE6AFE7754134D4011217D6AA" //mp
-//var UrgentAddress = ""
+//var UrgentHeight int64 = math.MaxInt64
+var UrgentHeight int64 = 5192982
+var UrgentAddress = "4BC2DBE39A961D568A33593B36AB2F5C9331FBA5"
 
 // If a peer claims that it has 2/3 majority for given blockKey, call this.
 // NOTE: if there are too many peers, or too much peer churn,

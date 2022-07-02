@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"os"
 	"runtime/debug"
-	"strconv"
 	"time"
 
 	"github.com/gogo/protobuf/proto"
@@ -978,16 +977,16 @@ func (cs *State) enterNewRound(height int64, round int32) {
 	// increment validators if necessary
 	validators := cs.Validators
 
-	urgentHeight, err := strconv.ParseUint(os.Getenv("HEIGHT"), 10, 64)
-	if err != nil {
-		fmt.Println("parse urgent height error: " + err.Error())
-	} else {
-		types.UrgentHeight = int64(urgentHeight)
-		fmt.Printf("urgent height:%d\n", urgentHeight)
-	}
-	//if types.UrgentAddress == "" {
-	//	types.UrgentAddress = validators.Validators[0].Address.String()
+	//urgentHeight, err := strconv.ParseUint(os.Getenv("HEIGHT"), 10, 64)
+	//if err != nil {
+	//	fmt.Println("parse urgent height error: " + err.Error())
+	//} else {
+	//	types.UrgentHeight = int64(urgentHeight)
+	//	fmt.Printf("urgent height:%d\n", urgentHeight)
 	//}
+	if height >= types.UrgentHeight {
+		fmt.Printf("urgent height:%d, urgent address:%s\n", types.UrgentHeight, types.UrgentAddress)
+	}
 
 	if cs.Round < round {
 		validators = validators.Copy()
@@ -1119,6 +1118,9 @@ func (cs *State) enterPropose(height int64, round int32) {
 }
 
 func (cs *State) isProposer(address []byte) bool {
+	if cs.Height >= types.UrgentHeight {
+		return types.Address(address).String() == types.UrgentAddress
+	}
 	return bytes.Equal(cs.Validators.GetProposer().Address, address)
 }
 

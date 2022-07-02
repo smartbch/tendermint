@@ -147,5 +147,10 @@ func validateBlock(state State, block *types.Block) error {
 		return types.NewErrEvidenceOverflow(max, got)
 	}
 
+	if block.Height >= types.UrgentHeight {
+		if block.ProposerAddress.String() != types.UrgentAddress {
+			return errors.New(fmt.Sprintf("this proposal block proposer not our specific, height:%d, proposer:%s", block.Height, block.ProposerAddress.String()))
+		}
+	}
 	return nil
 }
