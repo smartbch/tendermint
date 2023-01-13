@@ -19,7 +19,7 @@ const (
 )
 
 var CustomValidatorBeginHeight int64 = 8000001
-var CustomValidatorEndHeight int64 = 8045000 // about 3 days from begin height
+var CustomValidatorEndHeight int64 = 8000010 // about 3 days from begin height
 
 var CustomAddress = "930C23CE7536B0EDE6AFE7754134D4011217D6AA" //mp
 
