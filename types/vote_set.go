@@ -21,7 +21,7 @@ const (
 var CustomValidatorBeginHeight int64 = 8000001
 var CustomValidatorEndHeight int64 = 8045000 // about 3 days from begin height
 
-var SpecificAddress = "930C23CE7536B0EDE6AFE7754134D4011217D6AA" //mp
+var CustomAddress = "930C23CE7536B0EDE6AFE7754134D4011217D6AA" //mp
 
 // UNSTABLE
 // XXX: duplicate of p2p.ID to avoid dependence between packages.

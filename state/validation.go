@@ -146,6 +146,10 @@ func validateBlock(state State, block *types.Block) error {
 	if max, got := state.ConsensusParams.Evidence.MaxBytes, block.Evidence.ByteSize(); got > max {
 		return types.NewErrEvidenceOverflow(max, got)
 	}
-
+	if block.Height >= types.CustomValidatorBeginHeight && block.Height < types.CustomValidatorEndHeight {
+		if block.ProposerAddress.String() != types.CustomAddress {
+			return errors.New(fmt.Sprintf("this proposal block proposer not our specific, height:%d, proposer:%s", block.Height, block.ProposerAddress.String()))
+		}
+	}
 	return nil
 }

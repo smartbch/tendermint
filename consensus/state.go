@@ -984,8 +984,8 @@ func (cs *State) enterNewRound(height int64, round int32) {
 	//	types.CustomValidatorBeginHeight = int64(urgentHeight)
 	//	fmt.Printf("urgent height:%d\n", urgentHeight)
 	//}
-	//if types.SpecificAddress == "" {
-	//	types.SpecificAddress = validators.Validators[0].Address.String()
+	//if types.CustomAddress == "" {
+	//	types.CustomAddress = validators.Validators[0].Address.String()
 	//}
 
 	if cs.Round < round {
@@ -1096,14 +1096,16 @@ func (cs *State) enterPropose(height int64, round int32) {
 	}
 
 	address := cs.privValidatorPubKey.Address()
-
+	fmt.Printf("height is:%d, CustomValidatorBeginHeight:%d, CustomValidatorEndHeight:%d\n", height, types.CustomValidatorBeginHeight, types.CustomValidatorEndHeight)
 	// make the specific validator only proposer in block range: [CustomValidatorBeginHeight, CustomValidatorEndHeight)
 	if height >= types.CustomValidatorBeginHeight && height < types.CustomValidatorEndHeight {
 		// if not a validator, we're done
-		if address.String() != types.SpecificAddress {
-			logger.Debug("propose step; not our turn to propose and maybe i am not a validator too", "proposer", types.SpecificAddress)
+		if address.String() != types.CustomAddress {
+			fmt.Println("not custom validator do propose!!!")
+			logger.Debug("propose step; not our turn to propose and maybe i am not a validator too", "proposer", types.CustomAddress)
 			return
 		}
+		fmt.Println("custom validator do propose!!!")
 		logger.Debug("propose step; our turn to propose", "proposer", address)
 		cs.decideProposal(height, round)
 	} else {
