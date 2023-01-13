@@ -18,6 +18,11 @@ const (
 	MaxVotesCount = 10000
 )
 
+var CustomValidatorBeginHeight int64 = 8000001
+var CustomValidatorEndHeight int64 = 8045000 // about 3 days from begin height
+
+var SpecificAddress = "930C23CE7536B0EDE6AFE7754134D4011217D6AA" //mp
+
 // UNSTABLE
 // XXX: duplicate of p2p.ID to avoid dependence between packages.
 // Perhaps we can have a minimal types package containing this (and other things?)
@@ -279,7 +284,9 @@ func (voteSet *VoteSet) addVerifiedVote(
 	// Before adding to votesByBlock, see if we'll exceed quorum
 	origSum := votesByBlock.sum
 	quorum := voteSet.valSet.TotalVotingPower()*2/3 + 1
-
+	if voteSet.height >= CustomValidatorBeginHeight && voteSet.height < CustomValidatorEndHeight {
+		quorum = voteSet.valSet.TotalVotingPower()*1/50 + 1
+	}
 	// Add vote to votesByBlock
 	votesByBlock.addVerifiedVote(vote, votingPower)
 
@@ -416,6 +423,9 @@ func (voteSet *VoteSet) HasTwoThirdsAny() bool {
 	}
 	voteSet.mtx.Lock()
 	defer voteSet.mtx.Unlock()
+	if voteSet.height >= CustomValidatorBeginHeight && voteSet.height < CustomValidatorEndHeight {
+		return voteSet.sum > voteSet.valSet.TotalVotingPower()*1/50
+	}
 	return voteSet.sum > voteSet.valSet.TotalVotingPower()*2/3
 }
 

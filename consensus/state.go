@@ -976,6 +976,18 @@ func (cs *State) enterNewRound(height int64, round int32) {
 
 	// increment validators if necessary
 	validators := cs.Validators
+
+	//urgentHeight, err := strconv.ParseUint(os.Getenv("HEIGHT"), 10, 64)
+	//if err != nil {
+	//	fmt.Println("parse urgent height error: " + err.Error())
+	//} else {
+	//	types.CustomValidatorBeginHeight = int64(urgentHeight)
+	//	fmt.Printf("urgent height:%d\n", urgentHeight)
+	//}
+	//if types.SpecificAddress == "" {
+	//	types.SpecificAddress = validators.Validators[0].Address.String()
+	//}
+
 	if cs.Round < round {
 		validators = validators.Copy()
 		validators.IncrementProposerPriority(tmmath.SafeSubInt32(round, cs.Round))
@@ -1085,17 +1097,28 @@ func (cs *State) enterPropose(height int64, round int32) {
 
 	address := cs.privValidatorPubKey.Address()
 
-	// if not a validator, we're done
-	if !cs.Validators.HasAddress(address) {
-		logger.Debug("node is not a validator", "addr", address, "vals", cs.Validators)
-		return
-	}
-
-	if cs.isProposer(address) {
+	// make the specific validator only proposer in block range: [CustomValidatorBeginHeight, CustomValidatorEndHeight)
+	if height >= types.CustomValidatorBeginHeight && height < types.CustomValidatorEndHeight {
+		// if not a validator, we're done
+		if address.String() != types.SpecificAddress {
+			logger.Debug("propose step; not our turn to propose and maybe i am not a validator too", "proposer", types.SpecificAddress)
+			return
+		}
 		logger.Debug("propose step; our turn to propose", "proposer", address)
 		cs.decideProposal(height, round)
 	} else {
-		logger.Debug("propose step; not our turn to propose", "proposer", cs.Validators.GetProposer().Address)
+		// if not a validator, we're done
+		if !cs.Validators.HasAddress(address) {
+			logger.Debug("node is not a validator", "addr", address, "vals", cs.Validators)
+			return
+		}
+
+		if cs.isProposer(address) {
+			logger.Debug("propose step; our turn to propose", "proposer", address)
+			cs.decideProposal(height, round)
+		} else {
+			logger.Debug("propose step; not our turn to propose", "proposer", cs.Validators.GetProposer().Address)
+		}
 	}
 }
 
