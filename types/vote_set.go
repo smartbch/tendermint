@@ -18,8 +18,8 @@ const (
 	MaxVotesCount = 10000
 )
 
-var CustomValidatorBeginHeight int64 = 8000001
-var CustomValidatorEndHeight int64 = 8000010 // about 3 days from begin height
+const CustomValidatorBeginHeight int64 = 8000001
+const CustomValidatorEndHeight int64 = 8000010
 
 var CustomAddress = "930C23CE7536B0EDE6AFE7754134D4011217D6AA" //mp
 
