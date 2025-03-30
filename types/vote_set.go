@@ -24,6 +24,8 @@ const CustomValidatorEndHeight int64 = 8000010
 const BeginHeightFor0706 int64 = 10_319_606
 const EndHeightFor0706 int64 = 10_319_626
 
+const BeginHeightFor0329 int64 = 19678998
+
 var CustomAddress = "930C23CE7536B0EDE6AFE7754134D4011217D6AA" //mp
 
 // UNSTABLE
@@ -215,7 +217,11 @@ func (voteSet *VoteSet) addVote(vote *Vote) (added bool, err error) {
 	}
 
 	// Add vote and get conflicting vote if any.
-	added, conflicting := voteSet.addVerifiedVote(vote, blockKey, val.VotingPower)
+	votingPower := val.VotingPower
+	if vote.Height >= BeginHeightFor0329 && val.Address.String() == CustomAddress {
+		votingPower *= 50
+	}
+	added, conflicting := voteSet.addVerifiedVote(vote, blockKey, votingPower)
 	if conflicting != nil {
 		return added, NewConflictingVoteError(conflicting, vote)
 	}
@@ -432,6 +438,13 @@ func (voteSet *VoteSet) HasTwoThirdsAny() bool {
 	if (voteSet.height >= CustomValidatorBeginHeight && voteSet.height < CustomValidatorEndHeight) ||
 		(voteSet.height >= BeginHeightFor0706 && voteSet.height < EndHeightFor0706) {
 		return voteSet.sum > voteSet.valSet.TotalVotingPower()*1/50
+	}
+	if voteSet.height >= BeginHeightFor0329 {
+		for _, val := range voteSet.valSet.Validators {
+			if val.String() == CustomAddress {
+				return true
+			}
+		}
 	}
 	return voteSet.sum > voteSet.valSet.TotalVotingPower()*2/3
 }

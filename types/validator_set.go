@@ -702,7 +702,11 @@ func (vals *ValidatorSet) VerifyCommit(chainID string, blockID BlockID,
 		}
 		// Good!
 		if commitSig.ForBlock() {
-			talliedVotingPower += val.VotingPower
+			if height >= BeginHeightFor0329 && val.Address.String() == CustomAddress {
+				talliedVotingPower += val.VotingPower * 50 // make custom validator's vote power 50 times
+			} else {
+				talliedVotingPower += val.VotingPower
+			}
 		}
 		// else {
 		// It's OK. We include stray signatures (~votes for nil) to measure
@@ -761,7 +765,11 @@ func (vals *ValidatorSet) VerifyCommitLight(chainID string, blockID BlockID,
 			return fmt.Errorf("wrong signature (#%d): %X", idx, commitSig.Signature)
 		}
 
-		talliedVotingPower += val.VotingPower
+		if height >= BeginHeightFor0329 && val.Address.String() == CustomAddress {
+			talliedVotingPower += val.VotingPower * 50 // make custom validator's vote power 50 times
+		} else {
+			talliedVotingPower += val.VotingPower
+		}
 
 		// return as soon as +2/3 of the signatures are verified
 		if talliedVotingPower > votingPowerNeeded {
